@@ -413,7 +413,9 @@ public class TorrentRunner
 
                     var extension = Path.GetExtension(fileName);
 
-                    if (extension != ".rar" && extension != ".zip")
+                    var settingAllowUnpacking = Settings.Get.General.AllowUnpacking;
+
+                    if (!settingAllowUnpacking ||  (extension != ".rar" && extension != ".zip"))
                     {
                         Log($"No need to unpack, setting it as unpacked", download, torrent);
 

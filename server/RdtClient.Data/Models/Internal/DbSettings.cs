@@ -46,6 +46,10 @@ public class DbSettingsGeneral
     [Description("Maximum amount of downloads that get unpacked on your host at the same time.")]
     public Int32 UnpackLimit { get; set; } = 1;
 
+    [DisplayName("Unpack archives")]
+    [Description("When true, attempt to unpack .zip and .rar files in torrents")]
+    public Boolean AllowUnpacking {get; set; } = true;
+
     [DisplayName("Categories")]
     [Description("Expose these categories through the QBittorrent API.")]
     public String? Categories { get; set; } = null;

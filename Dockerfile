@@ -32,7 +32,8 @@ WORKDIR /appserver
 
 RUN \
    echo "**** Cloning Source Code ****" && \
-   git clone https://github.com/rogerfar/rdt-client.git . && \
+   git clone https://github.com/Cucumberrbob/rdt-client.git . && \
+   git checkout add-allow-unpack-setting && \
    echo "**** Building Source Code for $TARGETPLATFORM on $BUILDPLATFORM ****" && \
    cd server && \
    if [ "$TARGETPLATFORM" = "linux/arm/v7" ] ; then \

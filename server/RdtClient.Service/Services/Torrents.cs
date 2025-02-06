@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
+using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -12,14 +12,16 @@ using RdtClient.Data.Models.TorrentClient;
 using RdtClient.Service.BackgroundServices;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services.TorrentClients;
+using RdtClient.Service.Wrappers;
+using Process = System.Diagnostics.Process;
 using Torrent = RdtClient.Data.Models.Data.Torrent;
 
 namespace RdtClient.Service.Services;
 
 public class Torrents(
     ILogger<Torrents> logger,
-    TorrentData torrentData,
-    Downloads downloads,
+    ITorrentData torrentData,
+    IDownloads downloads,
     AllDebridTorrentClient allDebridTorrentClient,
     PremiumizeTorrentClient premiumizeTorrentClient,
     RealDebridTorrentClient realDebridTorrentClient,
@@ -689,9 +691,12 @@ public class Torrents(
         await torrentData.Update(torrent);
     }
 
-    public async Task RunTorrentComplete(Guid torrentId)
+    public async Task RunTorrentComplete(Guid torrentId, IWrappedProcess? wrappedProcess = null, DbSettings? settings = null, IFileSystem? fileSystem = null)
     {
-        if (String.IsNullOrWhiteSpace(Settings.Get.General.RunOnTorrentCompleteFileName))
+        settings ??= Settings.Get;
+        fileSystem ??= new FileSystem();
+        
+        if (String.IsNullOrWhiteSpace(settings.General.RunOnTorrentCompleteFileName))
         {
             return;
         }
@@ -700,8 +705,8 @@ public class Torrents(
 
         var downloadsForTorrent = await downloads.GetForTorrent(torrentId);
 
-        var fileName = Settings.Get.General.RunOnTorrentCompleteFileName;
-        var arguments = Settings.Get.General.RunOnTorrentCompleteArguments ?? "";
+        var fileName = settings.General.RunOnTorrentCompleteFileName;
+        var arguments = settings.General.RunOnTorrentCompleteArguments ?? "";
 
         Log($"Parsing external program {fileName} with arguments {arguments}", torrent);
 
@@ -710,7 +715,7 @@ public class Torrents(
 
         var filePath = torrentPath;
 
-        var files = Directory.GetFiles(filePath);
+        var files = fileSystem.Directory.GetFiles(filePath);
 
         if (files.Length == 1)
         {
@@ -731,7 +736,7 @@ public class Torrents(
         var errorSb = new StringBuilder();
         var outputSb = new StringBuilder();
 
-        using var process = new Process();
+        using var process = wrappedProcess != null ? wrappedProcess.NewProcess() : new Process();
             
         process.StartInfo.FileName = fileName;
         process.StartInfo.Arguments = arguments;

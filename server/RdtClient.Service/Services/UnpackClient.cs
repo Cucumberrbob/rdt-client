@@ -2,13 +2,12 @@
 using System.IO.Abstractions;
 using RdtClient.Data.Models.Data;
 using RdtClient.Service.Helpers;
+using RdtClient.Service.Wrappers;
 using SharpCompress.Archives;
-using SharpCompress.Archives.Rar;
-using SharpCompress.Archives.Zip;
 
 namespace RdtClient.Service.Services;
 
-public class UnpackClient(Download download, String destinationPath, IFileSystem fileSystem)
+public class UnpackClient(Download download, String destinationPath, IFileSystem fileSystem, IZipArchiveWrapper zipArchiveWrapper, IRarArchiveWrapper rarArchiveWrapper)
 {
     public Boolean Finished { get; private set; }
         
@@ -60,7 +59,7 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
             var extractPath = destinationPath;
             String? extractPathTemp = null;
 
-            var archiveEntries = await GetArchiveFiles(filePath, fileSystem);
+            var archiveEntries = await GetArchiveFiles(filePath, fileSystem, zipArchiveWrapper, rarArchiveWrapper);
 
             if (!archiveEntries.Any(m => m.StartsWith(_torrent.RdName + @"\")) && !archiveEntries.Any(m => m.StartsWith(_torrent.RdName + "/")))
             {
@@ -114,7 +113,7 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
         }
     }
 
-    private static async Task<IList<String>> GetArchiveFiles(String filePath, IFileSystem fileSystem)
+    private static async Task<IList<String>> GetArchiveFiles(String filePath, IFileSystem fileSystem, IZipArchiveWrapper zipArchiveWrapper, IRarArchiveWrapper rarArchiveWrapper)
     {
         await using Stream stream = fileSystem.File.OpenRead(filePath);
 
@@ -123,11 +122,11 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
         IArchive archive;
         if (extension == ".zip")
         {
-            archive = ZipArchive.Open(stream);
+            archive = zipArchiveWrapper.Open(stream);
         }
         else
         {
-            archive = RarArchive.Open(stream);
+            archive = rarArchiveWrapper.Open(stream);
         }
 
         var entries = archive.Entries
@@ -144,18 +143,18 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
     {
         var parts = ArchiveFactory.GetFileParts(filePath);
 
-        var fi = parts.Select(m => new FileInfo(m));
+        var fi = parts.Select(m => fileSystem.FileInfo.New(m));
 
         var extension = Path.GetExtension(filePath);
 
         IArchive archive;
         if (extension == ".zip")
         {
-            archive = ZipArchive.Open(fi);
+            archive = zipArchiveWrapper.Open(fi);
         }
         else
         {
-            archive = RarArchive.Open(fi);
+            archive = rarArchiveWrapper.Open(fi);
         }
 
         archive.ExtractToDirectory(extractPath,

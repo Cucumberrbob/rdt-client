@@ -133,19 +133,19 @@ public class Torrents(
         {
             try
             {
-                if (!Directory.Exists(Settings.Get.General.CopyAddedTorrents))
+                if (!fileSystem.Directory.Exists(Settings.Get.General.CopyAddedTorrents))
                 {
-                    Directory.CreateDirectory(Settings.Get.General.CopyAddedTorrents);
+                    fileSystem.Directory.CreateDirectory(Settings.Get.General.CopyAddedTorrents);
                 }
 
                 var copyFileName = Path.Combine(Settings.Get.General.CopyAddedTorrents, $"{FileHelper.RemoveInvalidFileNameChars(magnet.Name!)}.magnet");
 
-                if (File.Exists(copyFileName))
+                if (fileSystem.File.Exists(copyFileName))
                 {
-                    File.Delete(copyFileName);
+                    fileSystem.File.Delete(copyFileName);
                 }
 
-                await File.WriteAllTextAsync(copyFileName, magnetLink);
+                await fileSystem.File.WriteAllTextAsync(copyFileName, magnetLink);
             }
             catch (Exception ex)
             {
@@ -184,19 +184,19 @@ public class Torrents(
         {
             try
             {
-                if (!Directory.Exists(Settings.Get.General.CopyAddedTorrents))
+                if (!fileSystem.Directory.Exists(Settings.Get.General.CopyAddedTorrents))
                 {
-                    Directory.CreateDirectory(Settings.Get.General.CopyAddedTorrents);
+                    fileSystem.Directory.CreateDirectory(Settings.Get.General.CopyAddedTorrents);
                 }
 
                 var copyFileName = Path.Combine(Settings.Get.General.CopyAddedTorrents, $"{FileHelper.RemoveInvalidFileNameChars(monoTorrent.Name)}.torrent");
 
-                if (File.Exists(copyFileName))
+                if (fileSystem.File.Exists(copyFileName))
                 {
-                    File.Delete(copyFileName);
+                    fileSystem.File.Delete(copyFileName);
                 }
 
-                await File.WriteAllBytesAsync(copyFileName, bytes);
+                await fileSystem.File.WriteAllBytesAsync(copyFileName, bytes);
             }
             catch (Exception ex)
             {
@@ -335,7 +335,6 @@ public class Torrents(
 
             Log($"Deleting local files in {downloadPath}", torrent);
 
-            if (Directory.Exists(downloadPath))
             {
                 var retry = 0;
 
@@ -343,7 +342,6 @@ public class Torrents(
                 {
                     try
                     {
-                        Directory.Delete(downloadPath, true);
 
                         break;
                     }

@@ -62,7 +62,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                 foreach (var torrentFile in torrentFiles)
                 {
-                    var fileInfo = new FileInfo(torrentFile);
+                    var fileInfo = fileSystem.FileInfo.New(torrentFile);
 
                     if (fileInfo.Extension != ".magnet" && fileInfo.Extension != ".torrent")
                     {
@@ -138,7 +138,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
         }
     }
 
-    private static Boolean IsFileLocked(FileInfo file)
+    private static Boolean IsFileLocked(IFileInfo file)
     {
         try
         {

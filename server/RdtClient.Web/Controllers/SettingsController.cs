@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Abstractions;
 using Aria2NET;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ namespace RdtClient.Web.Controllers;
 
 [Authorize(Policy = "AuthSetting")]
 [Route("Api/Settings")]
-public class SettingsController(Settings settings, Torrents torrents) : Controller
+public class SettingsController(Settings settings, Torrents torrents, IFileSystem fileSystem) : Controller
 {
     [HttpGet]
     [Route("")]
@@ -61,14 +62,14 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
         var path = request.Path.TrimEnd('/').TrimEnd('\\');
 
-        if (!Directory.Exists(path))
+        if (!fileSystem.Directory.Exists(path))
         {
             throw new($"Path {path} does not exist");
         }
 
         var testFile = $"{path}/test.txt";
 
-        await System.IO.File.WriteAllTextAsync(testFile, "RealDebridClient Test File, you can remove this file.");
+        await fileSystem.File.WriteAllTextAsync(testFile, "RealDebridClient Test File, you can remove this file.");
             
         await FileHelper.Delete(testFile);
 

@@ -1,4 +1,5 @@
-﻿using Aria2NET;
+﻿using System.IO.Abstractions;
+using Aria2NET;
 using Serilog;
 
 namespace RdtClient.Service.Services.Downloaders;
@@ -13,13 +14,14 @@ public class Aria2cDownloader : IDownloader
     private readonly Aria2NetClient _aria2NetClient;
 
     private readonly ILogger _logger;
+    private readonly IFileSystem _fileSystem;
     private readonly String _uri;
     private readonly String _filePath;
     private readonly String _remotePath;
 
     private String? _gid;
 
-    public Aria2cDownloader(String? gid, String uri, String filePath, String downloadPath, String? category)
+    public Aria2cDownloader(String? gid, String uri, String filePath, String downloadPath, String? category, IFileSystem fileSystem)
     {
         _logger = Log.ForContext<Aria2cDownloader>();
         _logger.Debug($"Instantiated new Aria2c Downloader for URI {uri} to filePath {filePath} and downloadPath {downloadPath} and GID {gid}");
@@ -27,6 +29,7 @@ public class Aria2cDownloader : IDownloader
         _gid = gid;
         _uri = uri;
         _filePath = filePath;
+        _fileSystem = fileSystem;
 
         if (!String.IsNullOrWhiteSpace(Settings.Get.DownloadClient.Aria2cDownloadPath))
         {
@@ -219,7 +222,7 @@ public class Aria2cDownloader : IDownloader
                     break;
                 }
 
-                if (File.Exists(_filePath))
+                if (_fileSystem.File.Exists(_filePath))
                 {
                     DownloadComplete?.Invoke(this, new());
                     break;

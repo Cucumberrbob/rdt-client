@@ -22,13 +22,13 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
 
         try
         {
-            var filePath = new FileInfo(path);
+            var filePath =  fileSystem.FileInfo.New(path);
 
             var rcloneMountPath = Settings.Get.DownloadClient.RcloneMountPath.TrimEnd(['\\', '/']);
             var searchSubDirectories = rcloneMountPath.EndsWith('*');
             rcloneMountPath = rcloneMountPath.TrimEnd('*').TrimEnd(['\\', '/']);
 
-            if (!Directory.Exists(rcloneMountPath))
+            if (!fileSystem.Directory.Exists(rcloneMountPath))
             {
                 throw new($"Mount path {rcloneMountPath} does not exist!");
             }
@@ -69,7 +69,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
                 
                 // Make sure the file exists before making any assumptions.
                 // If this somehow fails, fallback to the search below.
-                if (File.Exists(potentialFilePath))
+                if (fileSystem.File.Exists(potentialFilePath))
                 {
                     _logger.Debug($"Found file {path} at {potentialFilePath} using direct search");
                     file = potentialFilePath;
@@ -89,7 +89,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
                     searchPath
                 };
 
-                var directoryInfo = new DirectoryInfo(searchPath);
+                var directoryInfo = fileSystem.DirectoryInfo.New(searchPath);
 
                 while (directoryInfo.Parent != null)
                 {
@@ -126,7 +126,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
 
                     if (file == null && searchSubDirectories)
                     {
-                        var subDirectories = Directory.GetDirectories(rcloneMountPath, "*.*", SearchOption.TopDirectoryOnly);
+                        var subDirectories = fileSystem.Directory.GetDirectories(rcloneMountPath, "*.*", SearchOption.TopDirectoryOnly);
 
                         foreach (var subDirectory in subDirectories)
                         {
@@ -217,7 +217,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
 
             _logger.Debug($"Searching {potentialFilePathWithFileName}...");
 
-            if (File.Exists(potentialFilePathWithFileName))
+            if (fileSystem.File.Exists(potentialFilePathWithFileName))
             {
                 return potentialFilePathWithFileName;
             }
@@ -230,9 +230,9 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
     {
         try
         {
-            File.CreateSymbolicLink(symlinkPath, sourcePath);
+            fileSystem.File.CreateSymbolicLink(symlinkPath, sourcePath);
 
-            if (File.Exists(symlinkPath)) // Double-check that the link was created
+            if (fileSystem.File.Exists(symlinkPath)) // Double-check that the link was created
             {
                 _logger.Information($"Created symbolic link from {sourcePath} to {symlinkPath}");
 

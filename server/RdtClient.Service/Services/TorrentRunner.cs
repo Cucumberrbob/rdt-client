@@ -10,10 +10,11 @@ using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text.Json;
 using System.Web;
+using RdtClient.Service.Wrappers;
 
 namespace RdtClient.Service.Services;
 
-public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Downloads downloads, RemoteService remoteService, IFileSystem fileSystem)
+public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Downloads downloads, RemoteService remoteService, IFileSystem fileSystem, IZipArchiveWrapper zipArchiveWrapper, IRarArchiveWrapper rarArchiveWrapper)
 {
     public static readonly ConcurrentDictionary<Guid, DownloadClient> ActiveDownloadClients = new();
     public static readonly ConcurrentDictionary<Guid, UnpackClient> ActiveUnpackClients = new();
@@ -500,7 +501,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                     Log($"Setting unpack path to {downloadPath}", download, torrent);
 
                     // Start the unpacking process
-                    var unpackClient = new UnpackClient(download, downloadPath, fileSystem);
+                    var unpackClient = new UnpackClient(download, downloadPath, fileSystem, zipArchiveWrapper, rarArchiveWrapper);
 
                     if (TorrentRunner.ActiveUnpackClients.TryAdd(download.DownloadId, unpackClient))
                     {

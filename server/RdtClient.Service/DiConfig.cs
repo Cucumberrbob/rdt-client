@@ -23,6 +23,8 @@ public static class DiConfig
 
         services.AddSingleton<IProcessFactory, ProcessFactory>();
         services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<IRarArchiveWrapper, RarArchiveWrapper>();
+        services.AddSingleton<IZipArchiveWrapper, ZipArchiveWrapper>();
 
         services.AddScoped<Authentication>();
         services.AddScoped<IDownloads, Downloads>();

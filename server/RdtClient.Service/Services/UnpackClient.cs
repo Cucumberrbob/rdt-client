@@ -52,7 +52,7 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
     {
         try
         {
-            if (!File.Exists(filePath))
+            if (!fileSystem.File.Exists(filePath))
             {
                 return;
             }
@@ -60,7 +60,7 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
             var extractPath = destinationPath;
             String? extractPathTemp = null;
 
-            var archiveEntries = await GetArchiveFiles(filePath);
+            var archiveEntries = await GetArchiveFiles(filePath, fileSystem);
 
             if (!archiveEntries.Any(m => m.StartsWith(_torrent.RdName + @"\")) && !archiveEntries.Any(m => m.StartsWith(_torrent.RdName + "/")))
             {
@@ -71,9 +71,9 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
             {
                 extractPathTemp = Path.Combine(extractPath, Guid.NewGuid().ToString());
                 
-                if (!Directory.Exists(extractPathTemp))
+                if (!fileSystem.Directory.Exists(extractPathTemp))
                 {
-                    Directory.CreateDirectory(extractPathTemp);
+                    fileSystem.Directory.CreateDirectory(extractPathTemp);
                 }
             }
             
@@ -83,13 +83,13 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
 
                 await FileHelper.Delete(filePath, fileSystem);
 
-                var rarFiles = Directory.GetFiles(extractPathTemp, "*.r00", SearchOption.TopDirectoryOnly);
+                var rarFiles = fileSystem.Directory.GetFiles(extractPathTemp, "*.r00", SearchOption.TopDirectoryOnly);
 
                 foreach (var rarFile in rarFiles)
                 {
                     var mainRarFile = Path.ChangeExtension(rarFile, ".rar");
 
-                    if (File.Exists(mainRarFile))
+                    if (fileSystem.File.Exists(mainRarFile))
                     {
                         Extract(mainRarFile, extractPath, cancellationToken);
                     }
@@ -114,9 +114,9 @@ public class UnpackClient(Download download, String destinationPath, IFileSystem
         }
     }
 
-    private static async Task<IList<String>> GetArchiveFiles(String filePath)
+    private static async Task<IList<String>> GetArchiveFiles(String filePath, IFileSystem fileSystem)
     {
-        await using Stream stream = File.OpenRead(filePath);
+        await using Stream stream = fileSystem.File.OpenRead(filePath);
 
         var extension = Path.GetExtension(filePath);
 

@@ -1,17 +1,18 @@
-﻿using System.Text;
+﻿using System.IO.Abstractions;
+using System.Text;
 
 namespace RdtClient.Service.Helpers;
 
 public static class FileHelper
 {
-    public static async Task Delete(String path)
+    public static async Task Delete(String path, IFileSystem fileSystem)
     {
         if (String.IsNullOrWhiteSpace(path))
         {
             return;
         }
 
-        if (!File.Exists(path))
+        if (!fileSystem.File.Exists(path))
         {
             return;
         }
@@ -22,7 +23,7 @@ public static class FileHelper
         {
             try
             {
-                File.Delete(path);
+                fileSystem.File.Delete(path);
 
                 break;
             }
@@ -40,14 +41,14 @@ public static class FileHelper
         }
     }
 
-    public static async Task DeleteDirectory(String path)
+    public static async Task DeleteDirectory(String path, IFileSystem fileSystem)
     {
         if (String.IsNullOrWhiteSpace(path))
         {
             return;
         }
 
-        if (!Directory.Exists(path))
+        if (!fileSystem.Directory.Exists(path))
         {
             return;
         }
@@ -58,7 +59,7 @@ public static class FileHelper
         {
             try
             {
-                Directory.Delete(path, true);
+                fileSystem.Directory.Delete(path, true);
 
                 break;
             }
@@ -81,22 +82,23 @@ public static class FileHelper
         return String.Concat(filename.Split(Path.GetInvalidFileNameChars()));
     }
     
-    public static String GetDirectoryContents(String path)
+    public static String GetDirectoryContents(String path, IFileSystem fileSystem)
     {
         var stringBuilder = new StringBuilder();
-        GetDirectoryContents(path, stringBuilder, "");
+        GetDirectoryContents(path, stringBuilder, "", fileSystem);
         return stringBuilder.ToString();
     }
 
-    private static void GetDirectoryContents(String path, StringBuilder stringBuilder, String indent)
+    private static void GetDirectoryContents(String path, StringBuilder stringBuilder, String indent, IFileSystem fileSystem)
     {
-        var directoryInfo = new DirectoryInfo(path);
+        fileSystem ??= new FileSystem();
+        var directoryInfo = fileSystem.DirectoryInfo.New(path);
 
         var directories = directoryInfo.GetDirectories();
         foreach (var directory in directories)
         {
             stringBuilder.AppendLine($"{indent}{directory.Name}");
-            GetDirectoryContents(directory.FullName, stringBuilder, indent + "  ");
+            GetDirectoryContents(directory.FullName, stringBuilder, indent + "  ", fileSystem);
         }
 
         var files = directoryInfo.GetFiles();

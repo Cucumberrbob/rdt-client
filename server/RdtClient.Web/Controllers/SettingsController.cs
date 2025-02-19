@@ -71,7 +71,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
 
         await fileSystem.File.WriteAllTextAsync(testFile, "RealDebridClient Test File, you can remove this file.");
             
-        await FileHelper.Delete(testFile);
+        await FileHelper.Delete(testFile, fileSystem);
 
         return Ok();
     }
@@ -84,7 +84,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
 
         var testFilePath = Path.Combine(downloadPath, "testDefault.rar");
 
-        await FileHelper.Delete(testFilePath);
+        await FileHelper.Delete(testFilePath, fileSystem);
 
         var download = new Download
         {
@@ -96,7 +96,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
             }
         };
 
-        var downloadClient = new DownloadClient(download, download.Torrent, downloadPath, null);
+        var downloadClient = new DownloadClient(download, download.Torrent, downloadPath, null, fileSystem);
 
         await downloadClient.Start();
 
@@ -131,7 +131,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
             }
         }
 
-        await FileHelper.Delete(testFilePath);
+        await FileHelper.Delete(testFilePath, fileSystem);
 
         return Ok(downloadClient.Speed);
     }
@@ -144,7 +144,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
 
         var testFilePath = Path.Combine(downloadPath, "test.tmp");
 
-        await FileHelper.Delete(testFilePath);
+        await FileHelper.Delete(testFilePath, fileSystem);
 
         const Int32 testFileSize = 64 * 1024 * 1024;
 
@@ -171,7 +171,7 @@ public class SettingsController(Settings settings, Torrents torrents, IFileSyste
             
         fileStream.Close();
 
-        await FileHelper.Delete(testFilePath);
+        await FileHelper.Delete(testFilePath, fileSystem);
         
         return Ok(writeSpeed);
     }

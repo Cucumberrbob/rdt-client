@@ -1,10 +1,11 @@
-﻿using RdtClient.Data.Enums;
+﻿using System.IO.Abstractions;
+using RdtClient.Data.Enums;
 using RdtClient.Service.Helpers;
 using Serilog;
 
 namespace RdtClient.Service.Services.Downloaders;
 
-public class SymlinkDownloader(String uri, String destinationPath, String path, Provider? clientKind) : IDownloader
+public class SymlinkDownloader(String uri, String destinationPath, String path, Provider? clientKind, IFileSystem fileSystem) : IDownloader
 {
     public event EventHandler<DownloadCompleteEventArgs>? DownloadComplete;
     public event EventHandler<DownloadProgressEventArgs>? DownloadProgress;
@@ -155,7 +156,7 @@ public class SymlinkDownloader(String uri, String destinationPath, String path, 
 
                 try
                 {
-                    var allFolders = FileHelper.GetDirectoryContents(rcloneMountPath);
+                    var allFolders = FileHelper.GetDirectoryContents(rcloneMountPath, fileSystem);
 
                     _logger.Debug(allFolders);
                 }

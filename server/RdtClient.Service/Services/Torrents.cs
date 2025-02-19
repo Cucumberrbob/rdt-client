@@ -572,7 +572,7 @@ public class Torrents(
         {
             Log($"Deleting {filePath}", download, download.Torrent);
 
-            await FileHelper.Delete(filePath);
+            await FileHelper.Delete(filePath, fileSystem);
         }
 
         Log($"Resetting", download, download.Torrent);

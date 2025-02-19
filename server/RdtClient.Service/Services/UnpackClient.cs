@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Abstractions;
 using RdtClient.Data.Models.Data;
 using RdtClient.Service.Helpers;
 using SharpCompress.Archives;
@@ -7,7 +8,7 @@ using SharpCompress.Archives.Zip;
 
 namespace RdtClient.Service.Services;
 
-public class UnpackClient(Download download, String destinationPath)
+public class UnpackClient(Download download, String destinationPath, IFileSystem fileSystem)
 {
     public Boolean Finished { get; private set; }
         
@@ -80,7 +81,7 @@ public class UnpackClient(Download download, String destinationPath)
             {
                 Extract(filePath, extractPathTemp, cancellationToken);
 
-                await FileHelper.Delete(filePath);
+                await FileHelper.Delete(filePath, fileSystem);
 
                 var rarFiles = Directory.GetFiles(extractPathTemp, "*.r00", SearchOption.TopDirectoryOnly);
 
@@ -93,14 +94,14 @@ public class UnpackClient(Download download, String destinationPath)
                         Extract(mainRarFile, extractPath, cancellationToken);
                     }
 
-                    await FileHelper.DeleteDirectory(extractPathTemp);
+                    await FileHelper.DeleteDirectory(extractPathTemp, fileSystem);
                 }
             }
             else
             {
                 Extract(filePath, extractPath, cancellationToken);
 
-                await FileHelper.Delete(filePath);
+                await FileHelper.Delete(filePath, fileSystem);
             }
         }
         catch (Exception ex)

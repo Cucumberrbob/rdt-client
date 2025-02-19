@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RdtClient.Data.Enums;
@@ -8,7 +9,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace RdtClient.Service.BackgroundServices;
 
-public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProvider serviceProvider) : BackgroundService
+public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProvider serviceProvider, IFileSystem fileSystem) : BackgroundService
 {
     private DateTime _prevCheck = DateTime.MinValue;
 
@@ -57,7 +58,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                 _prevCheck = DateTime.UtcNow;
 
-                var torrentFiles = Directory.GetFiles(Settings.Get.Watch.Path, "*.*", SearchOption.TopDirectoryOnly);
+                var torrentFiles = fileSystem.Directory.GetFiles(Settings.Get.Watch.Path, "*.*", SearchOption.TopDirectoryOnly);
 
                 foreach (var torrentFile in torrentFiles)
                 {
@@ -98,35 +99,35 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                         if (fileInfo.Extension == ".torrent")
                         {
-                            var torrentFileContents = await File.ReadAllBytesAsync(torrentFile, stoppingToken);
+                            var torrentFileContents = await fileSystem.File.ReadAllBytesAsync(torrentFile, stoppingToken);
                             await torrentService.UploadFile(torrentFileContents, torrent);
                         }
                         else if (fileInfo.Extension == ".magnet")
                         {
-                            var magnetLink = await File.ReadAllTextAsync(torrentFile, stoppingToken);
+                            var magnetLink = await fileSystem.File.ReadAllTextAsync(torrentFile, stoppingToken);
                             await torrentService.UploadMagnet(magnetLink, torrent);
                         }
 
                         var processedPath = Path.Combine(processedStorePath, fileInfo.Name);
 
-                        if (!Directory.Exists(processedStorePath))
+                        if (!fileSystem.Directory.Exists(processedStorePath))
                         {
-                            Directory.CreateDirectory(processedStorePath);
+                            fileSystem.Directory.CreateDirectory(processedStorePath);
                         }
 
-                        File.Move(torrentFile, processedPath);
+                        fileSystem.File.Move(torrentFile, processedPath);
 
                         logger.Log(LogLevel.Debug, "Moved {torrentFile} to {processedPath}", torrentFile, processedPath);
                     }
                     catch
                     {
-                        if (!Directory.Exists(errorStorePath))
+                        if (!fileSystem.Directory.Exists(errorStorePath))
                         {
-                            Directory.CreateDirectory(errorStorePath);
+                            fileSystem.Directory.CreateDirectory(errorStorePath);
                         }
 
                         var processedPath = Path.Combine(errorStorePath, fileInfo.Name);
-                        File.Move(torrentFile, processedPath);
+                        fileSystem.File.Move(torrentFile, processedPath);
                     }
                 }
             }

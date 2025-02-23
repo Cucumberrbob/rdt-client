@@ -5,7 +5,6 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { FileSizePipe, NgxFilesizeModule } from 'ngx-filesize';
 import { AddNewTorrentComponent } from './add-new-torrent/add-new-torrent.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -23,6 +22,7 @@ import { TorrentStatusPipe } from './torrent-status.pipe';
 import { TorrentTableComponent } from './torrent-table/torrent-table.component';
 import { TorrentComponent } from './torrent/torrent.component';
 import { SortPipe } from './sort.pipe';
+import { FilesizePipe } from './filesize.pipe';
 
 @NgModule({
   declarations: [
@@ -41,18 +41,10 @@ import { SortPipe } from './sort.pipe';
     ProfileComponent,
     Nl2BrPipe,
     SortPipe,
+    FilesizePipe,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    HttpClientModule,
-    NgxFilesizeModule,
-    FlexLayoutModule,
-    ClipboardModule,
-  ],
+  imports: [BrowserModule, AppRoutingModule, FormsModule, HttpClientModule, FlexLayoutModule, ClipboardModule],
   providers: [
-    FileSizePipe,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: APP_BASE_HREF, useValue: (window as any)['_app_base'] || '/' },
   ],

@@ -1,13 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FileSizePipe } from 'ngx-filesize';
 import { RealDebridStatus, Torrent } from './models/torrent.model';
+import { filesize } from './filesize.util';
 
 @Pipe({
   name: 'status',
 })
 export class TorrentStatusPipe implements PipeTransform {
-  constructor(private pipe: FileSizePipe) {}
-
   transform(torrent: Torrent): string {
     if (torrent.error) {
       return torrent.error;
@@ -34,9 +32,7 @@ export class TorrentStatusPipe implements PipeTransform {
 
         let allSpeeds = downloading.reduce((sum, m) => sum + m.speed, 0);
 
-        let speed: string | string[] = '0';
-
-        speed = this.pipe.transform(allSpeeds, 'filesize');
+        const speed = filesize(allSpeeds);
 
         return `Downloading file ${downloading.length + downloaded.length}/${
           torrent.downloads.length
@@ -90,7 +86,7 @@ export class TorrentStatusPipe implements PipeTransform {
         if (torrent.rdSeeders < 1) {
           return `Torrent stalled`;
         }
-        const speed = this.pipe.transform(torrent.rdSpeed, 'filesize');
+        const speed = filesize(torrent.rdSpeed);
         return `Torrent downloading (${torrent.rdProgress}% - ${speed}/s)`;
       case RealDebridStatus.Processing:
         return `Torrent processing`;

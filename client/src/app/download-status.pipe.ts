@@ -1,13 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { FileSizePipe } from 'ngx-filesize';
 import { Download } from './models/download.model';
+import { filesize } from './filesize.util';
 
 @Pipe({
   name: 'downloadStatus',
 })
 export class DownloadStatusPipe implements PipeTransform {
-  constructor(private pipe: FileSizePipe) {}
-
   transform(value: Download): string {
     if (!value) {
       return 'Pending';
@@ -50,7 +48,7 @@ export class DownloadStatusPipe implements PipeTransform {
         progress = 0;
       }
 
-      const speed = this.pipe.transform(value.speed, 'filesize');
+      const speed = filesize(value.speed);
 
       return `Downloading ${progress.toFixed(2)}% (${speed}/s)`;
     }

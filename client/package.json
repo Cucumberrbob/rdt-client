@@ -26,7 +26,6 @@
     "@microsoft/signalr": "^6.0.21",
     "bulma": "^0.9.4",
     "file-saver-es": "^2.0.5",
-    "ngx-filesize": "^3.0.2",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
     "zone.js": "~0.13.1"

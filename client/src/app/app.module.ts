@@ -5,7 +5,6 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { curray } from 'curray';
 import { FileSizePipe, NgxFilesizeModule } from 'ngx-filesize';
 import { AddNewTorrentComponent } from './add-new-torrent/add-new-torrent.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -24,8 +23,6 @@ import { TorrentStatusPipe } from './torrent-status.pipe';
 import { TorrentTableComponent } from './torrent-table/torrent-table.component';
 import { TorrentComponent } from './torrent/torrent.component';
 import { SortPipe } from './sort.pipe';
-
-curray();
 
 @NgModule({
   declarations: [

@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/forms";
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton/themes/catppuccin';
+
+[data-theme='catppuccin'] {
+	--base-font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
+}
+
+body {
+	color: var(--base-font-color);
+	@variant dark {
+		color: var(--base-font-color-dark);
+	}
+}

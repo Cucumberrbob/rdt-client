@@ -1,4 +1,21 @@
-# Stage 1 - Build
+# Stage 1 - Build the frontend
+FROM node:22-alpine3.21 AS node-build-env
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
+ARG BUILDPLATFORM
+ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
+
+RUN mkdir /appclient
+WORKDIR /appclient
+
+COPY client-svelte ./client
+RUN \
+   cd client && \
+   echo "**** Building Code  ****" && \
+   npm i && \
+   npm run build
+
+# Stage 2 - Build the backend
 FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 AS dotnet-build-env
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
@@ -8,20 +25,13 @@ ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
 RUN mkdir /appserver
 WORKDIR /appserver
 
-# Install Node.js & npm (needed for building frontend)
-RUN apt update && apt install -y curl && \
-    apt install -y nodejs && \
-    apt install -y npm
-
-COPY client-svelte ./client-svelte
-COPY root ./root
 COPY server ./server
 RUN \
    echo "**** Building Source Code for $TARGETPLATFORM on $BUILDPLATFORM ****" && \
    cd server && \
    dotnet restore --no-cache RdtClient.sln && dotnet publish --no-restore -c Release -o out ; 
 
-# Stage 2 - Build runtime image
+# Stage 3 - Build runtime image
 FROM ghcr.io/linuxserver/baseimage-alpine:3.20
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
@@ -73,7 +83,8 @@ ENV PATH "$PATH:/usr/share/dotnet"
 # Copy files for app
 WORKDIR /app
 COPY --from=dotnet-build-env /appserver/server/out .
-COPY --from=dotnet-build-env /appserver/root/ /
+COPY --from=node-build-env /appclient/client/build ./wwwroot
+COPY ./root/ /
 
 # ports and volumes
 EXPOSE 6500

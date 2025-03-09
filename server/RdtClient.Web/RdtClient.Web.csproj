@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,25 +45,13 @@
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
 
-    <Target Name="Build Frontend" BeforeTargets="Build">
-        <Exec Command="npm install" WorkingDirectory="../../client-svelte" />
-        <Exec Command="npm run build" WorkingDirectory="../../client-svelte" />
-
-        <RemoveDir Directories="$(WebRoot)" Condition="Exists('$(WebRoot)')" />
-
-        <ItemGroup>
-            <FrontendFiles Include="../../client-svelte/build\**\*.*" />
-        </ItemGroup>
-
-        <Copy SourceFiles="@(FrontendFiles)"
-              DestinationFiles="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
-
-        <Message Importance="high" Text="SvelteKit build copied to wwwroot" />
-    </Target>
-    
   <ItemGroup>
     <ProjectReference Include="..\RdtClient.Data\RdtClient.Data.csproj" />
     <ProjectReference Include="..\RdtClient.Service\RdtClient.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 

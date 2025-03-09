@@ -32,6 +32,30 @@
 		<a href="/addTorrent">Add Torrent</a>
 	{/snippet}
 	{#snippet trail()}
+		<select class="select preset-outlined-tertiary-500" onchange={({currentTarget}) => document.querySelector('html')?.setAttribute("data-theme", currentTarget.value)}>
+			<option selected value="catppuccin">Catppuccin</option>
+			<option value="cerberus">Cerberus</option>
+			<option value="concord">concord</option>
+			<option value="crimson">crimson</option>
+			<option value="fennec">fennec</option>
+			<option value="hamlindigo">hamlindigo</option>
+			<option value="legacy">legacy</option>
+			<option value="mint">mint</option>
+			<option value="modern">modern</option>
+			<option value="mona">mona</option>
+			<option value="nosh">nosh</option>
+			<option value="nouveau">nouveau</option>
+			<option value="pine">pine</option>
+			<option value="reign">reign</option>
+			<option value="rocket">rocket</option>
+			<option value="rose">rose</option>
+			<option value="sahara">sahara</option>
+			<option value="seafoam">seafoam</option>
+			<option value="terminus">terminus</option>
+			<option value="vintage">vintage</option>
+			<option value="vox">vox</option>
+			<option value="wintry">wintry</option>
+		</select>
 		<button class="button mr-0 p-2" popovertarget="profilepopover">
 			<CircleUser />
 		</button>

@@ -7,7 +7,7 @@
 export function formatFileSize(bytes: number, decimals: number = 2): string {
 	if (bytes === 0) return '0 B';
 
-	const base = 1000;
+	const base = 1024;
 	const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
 
 	// Get the appropriate unit index by calculating log base 1000

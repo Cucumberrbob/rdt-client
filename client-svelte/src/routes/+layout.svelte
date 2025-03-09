@@ -85,6 +85,8 @@
 	<div class="invisible"></div>
 </AppBar>
 
-<main class="container mx-auto w-full pt-4">
-	{@render children()}
-</main>
+<div class="w-full p-4">
+	<main class="container mx-auto pl-2">
+		{@render children()}
+	</main>
+</div>

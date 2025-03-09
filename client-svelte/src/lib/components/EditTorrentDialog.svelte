@@ -145,14 +145,11 @@
 
 		await torrentsCache.clearCache();
 	}
-
-	$inspect(torrentsToEdit);
-	$inspect(torrentSettings);
 </script>
 
 <dialog
 	bind:this={editDialogElement}
-	class="card preset-filled-surface-100-900 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 space-y-4 p-4"
+	class="card preset-filled-surface-100-900 border-surface-200-800 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 space-y-4 border p-4"
 >
 	<h4 class="h4">
 		{#if torrentsToEdit.length === 1}

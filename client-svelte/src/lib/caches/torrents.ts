@@ -3,7 +3,7 @@ import { type Torrent, TorrentsClient } from '$lib/generated/apiClient';
 import type { LoadEvent } from '@sveltejs/kit';
 import { base } from '$app/paths';
 
-class TorrentsCache {
+export class TorrentsCache {
 	static invalidationString = 'rdtclient:torrents' as const;
 
 	private torrents: Torrent[] | undefined = undefined;
@@ -24,11 +24,11 @@ class TorrentsCache {
 			this.lastFetch !== undefined &&
 			+Date.now() < +this.lastFetch + this.maxAge
 		) {
-			console.log('using cache');
+			console.log('[torrents] using cache');
 			return this.torrents;
 		}
 
-		console.log('fetching live data');
+		console.log('[torrents] fetching live data');
 		this.lastFetch = new Date();
 		const torrentsClient = new TorrentsClient(base, { fetch });
 		this.torrents = await torrentsClient.getAll();
@@ -40,11 +40,11 @@ class TorrentsCache {
 		depends('rdtclient:torrents');
 
 		if (this.torrents) {
-			console.log('using cache');
+			console.log('[torrents] using cache');
 			return this.torrents.find((t) => t.torrentId === torrentId);
 		}
 
-		console.log('fetching live data');
+		console.log('[torrents] fetching live data');
 		const torrentsClient = new TorrentsClient(base, { fetch });
 		return await torrentsClient.getById(torrentId);
 	}

@@ -24,11 +24,11 @@ class SettingsCache {
 			this.lastFetch !== undefined &&
 			+new Date() < +this.lastFetch + this.maxAge
 		) {
-			console.log('using cache');
+			console.log('[settings] using cache');
 			return this.settings;
 		}
 
-		console.log('fetching live data');
+		console.log('[settings] fetching live data');
 		this.lastFetch = new Date();
 		const torrentsClient = new SettingsClient(base, { fetch });
 		this.settings = await torrentsClient.get();

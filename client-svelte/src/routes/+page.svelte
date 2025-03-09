@@ -114,7 +114,6 @@
 		const results = await Promise.allSettled(torrentIds.map((id) => torrentsClient.retry(id)));
 
 		if (results.every((r) => r.status === 'fulfilled')) {
-			console.log(results);
 			await torrentsCache.clearCache();
 			return;
 		}
@@ -127,7 +126,6 @@
 		interval = setInterval(() => {
 			console.log('refreshing data');
 			torrentsCache.clearCache();
-			invalidate('rdtclient:torrents');
 		}, 10_000);
 	});
 

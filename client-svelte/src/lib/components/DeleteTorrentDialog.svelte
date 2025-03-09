@@ -3,14 +3,17 @@
 	import { TorrentControllerDeleteRequest, TorrentsClient } from '$lib/generated/apiClient';
 	import { base } from '$app/paths';
 	import { ProgressRing } from '@skeletonlabs/skeleton-svelte';
-	import { invalidate } from '$app/navigation';
+	import { torrentsCache, TorrentsCache } from '$lib/caches/torrents';
 
 	let {
 		torrentIdsToDelete,
-		deleteDialogElement = $bindable()
+		deleteDialogElement = $bindable(),
+		ondelete
 	}: {
 		torrentIdsToDelete: SvelteSet<string>;
 		deleteDialogElement: HTMLDialogElement | undefined;
+		/** Do not use this to invalidate TorrentsCache, that's done for you */
+		ondelete?: (deleteRequest: TorrentControllerDeleteRequest) => Promise<void> | void;
 	} = $props();
 
 	let isDeleting = $state(false);
@@ -41,6 +44,9 @@
 		);
 
 		isDeleting = false;
+		deleteClient = false;
+		deleteProvider = false;
+		deleteLocal = false;
 
 		const rejected = results.filter((r) => r.status === 'rejected');
 		const fulfilled = results.filter((r) => r.status === 'fulfilled');
@@ -57,16 +63,14 @@
 
 		deleteDialogElement?.close();
 
-		await Promise.all([
-			await invalidate(`${base}/Api/Torrents`),
-			...fulfilled.map((r) => invalidate(`${base}/Api/Torrents/Get/${r.value.id}`))
-		]);
+		if (ondelete) await ondelete(deleteRequest);
+		else await torrentsCache.clearCache();
 	}
 </script>
 
 <dialog
 	bind:this={deleteDialogElement}
-	class="card preset-filled-surface-100-900 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 space-y-4 p-4"
+	class="card preset-filled-surface-100-900 border-surface-200-800 absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 space-y-4 border p-4"
 >
 	<h4 class="h4">
 		{#if torrentIdsToDelete.size === 1}

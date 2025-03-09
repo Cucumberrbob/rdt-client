@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { Tabs } from '@skeletonlabs/skeleton-svelte';
+	import { ProgressRing, Tabs } from '@skeletonlabs/skeleton-svelte';
 	import Info from './Info.svelte';
 	import { formatDownloadClient } from '$lib/util/formatDownloadClient.js';
 	import { formatProvider } from '$lib/util/formatProvider';
@@ -12,11 +12,25 @@
 	} from '$lib/util/formatAction';
 	import { formatFileSize } from '$lib/util/filesize.js';
 	import { onDestroy, onMount } from 'svelte';
-	import { torrentsCache } from '$lib/caches/torrents';
+	import { TorrentsCache, torrentsCache } from '$lib/caches/torrents';
+	import { TorrentsClient, type Torrent } from '$lib/generated/apiClient';
+	import EditTorrentDialog from '$lib/components/EditTorrentDialog.svelte';
+	import DeleteTorrentDialog from '$lib/components/DeleteTorrentDialog.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
 
 	let { data }: PageProps = $props();
 
 	let selectedTab = $state('General');
+
+	let retrying = $state();
+	async function retryTorrent() {
+		retrying = true;
+		await new TorrentsClient(base).retry(data.torrent?.torrentId as string);
+		retrying = false;
+		await goto('/', { invalidate: [TorrentsCache.invalidationString] });
+	}
 
 	let interval: ReturnType<typeof setInterval> | undefined = undefined;
 	onMount(() => {
@@ -29,6 +43,9 @@
 	onDestroy(() => {
 		clearInterval(interval);
 	});
+
+	let editDialogElement = $state<HTMLDialogElement>();
+	let deleteDialogElement = $state<HTMLDialogElement>();
 </script>
 
 <div class="card space-y-4">
@@ -39,7 +56,7 @@
 			{data.torrent.rdName}
 		</h4>
 
-		<Tabs value={selectedTab} onValueChange={({value}) => (selectedTab = value)}>
+		<Tabs value={selectedTab} onValueChange={({ value }) => (selectedTab = value)}>
 			{#snippet list()}
 				<Tabs.Control value="General">General</Tabs.Control>
 				<Tabs.Control value="Files">Files</Tabs.Control>
@@ -48,7 +65,7 @@
 			{#snippet content()}
 				{@const provider = data.torrent?.clientKind ? formatProvider(data.torrent.clientKind) : ''}
 				<Tabs.Panel value="General" classes="flex flex-row flex-wrap gap-4">
-					<div class="card preset-outlined-surface-500 grow flex-col space-y-2 p-4">
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
 						<h6 class="h6">Status</h6>
 
 						<Info
@@ -104,12 +121,12 @@
 						/>
 					</div>
 
-					<div class="card preset-outlined-surface-500 grow flex-col space-y-2 p-4">
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
 						<h6 class="h6">Info</h6>
 
 						<Info title="Hash">
 							{#snippet content()}
-								<pre class="text-lg">{data.torrent?.hash}</pre>
+								<pre class="text-lg text-wrap break-all">{data.torrent?.hash}</pre>
 							{/snippet}
 						</Info>
 						<Info title="Category" value={data.torrent?.category} />
@@ -123,18 +140,18 @@
 						<Info title="{provider} ID" value={data.torrent?.rdId} />
 					</div>
 
-					<div class="card preset-outlined-surface-500 grow flex-col space-y-2 p-4">
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
 						<h6 class="h6">Filtering</h6>
 
 						<Info title="Include Regex" value={data.torrent?.includeRegex} />
 						<Info title="Exclude Regex" value={data.torrent?.excludeRegex} />
 						<Info
 							title="Download Min Size"
-							value={formatFileSize(data.torrent?.downloadMinSize ?? 0)}
+							value={formatFileSize((data.torrent?.downloadMinSize ?? 0) * 1024 * 1024)}
 						/>
 					</div>
 
-					<div class="card preset-outlined-surface-500 grow flex-col space-y-2 p-4">
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
 						<h6 class="h6">Settings</h6>
 
 						<Info
@@ -156,6 +173,41 @@
 								: undefined}
 						/>
 					</div>
+
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
+						<h6 class="h6">Other idk</h6>
+
+						<Info
+							title="Download Count"
+							value={data.torrent?.downloads?.length?.toString() ?? 'None'}
+						/>
+						<Info title="File Count" value={data.torrent?.files?.length?.toString() ?? 'None'} />
+					</div>
+
+					<div class="card preset-outlined-surface-500 flex grow flex-col space-y-2 p-4">
+						<h6 class="h6">Buttons</h6>
+
+						<button
+							class="button preset-filled-error-500 px-4 py-2"
+							onclick={() => deleteDialogElement?.showModal()}>Delete</button
+						>
+
+						<button
+							class="button preset-filled-success-500 flex justify-center px-4 py-2"
+							onclick={() => retryTorrent()}
+						>
+							{#if retrying}
+								<ProgressRing value={null} size="size-8" meterStroke="stroke-surface-500" />
+							{:else}
+								Retry
+							{/if}
+						</button>
+
+						<button
+							class="button preset-filled-surface-500 px-4 py-2"
+							onclick={() => editDialogElement?.showModal()}>Change Settings</button
+						>
+					</div>
 				</Tabs.Panel>
 				<Tabs.Panel value="Files">Files</Tabs.Panel>
 				<Tabs.Panel value="Downloads"
@@ -168,3 +220,21 @@
 		</Tabs>
 	{/if}
 </div>
+
+{#if data.torrent}
+	<EditTorrentDialog
+		torrentsToEdit={[data.torrent]}
+		bind:editDialogElement
+		settings={data.settings}
+	/>
+	<DeleteTorrentDialog
+		torrentIdsToDelete={new SvelteSet([data.torrent.torrentId as string])}
+		ondelete={async ({ deleteData }) => {
+			if (!deleteData) return;
+
+			await torrentsCache.clearCache({ invalidate: false });
+			await goto('/', { invalidate: [TorrentsCache.invalidationString] });
+		}}
+		bind:deleteDialogElement
+	/>
+{/if}

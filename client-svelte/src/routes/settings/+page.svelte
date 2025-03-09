@@ -29,7 +29,7 @@
 	}
 </script>
 
-<Tabs bind:value={selectedTab}>
+<Tabs value={selectedTab} onValueChange={({value}) => (selectedTab = value)}>
 	{#snippet list()}
 		{#each data.tabs as { key, displayName }}
 			<Tabs.Control value={key}>

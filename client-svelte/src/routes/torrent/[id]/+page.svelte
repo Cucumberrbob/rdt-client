@@ -13,11 +13,10 @@
 	import { formatFileSize } from '$lib/util/filesize.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { torrentsCache } from '$lib/caches/torrents';
-	import { Torrent } from '$lib/generated/apiClient';
 
 	let { data }: PageProps = $props();
 
-	let selectedTab = $state<'General' | 'Files' | 'Downloads'>('General');
+	let selectedTab = $state('General');
 
 	let interval: ReturnType<typeof setInterval> | undefined = undefined;
 	onMount(() => {
@@ -40,7 +39,7 @@
 			{data.torrent.rdName}
 		</h4>
 
-		<Tabs bind:value={selectedTab}>
+		<Tabs value={selectedTab} onValueChange={({value}) => (selectedTab = value)}>
 			{#snippet list()}
 				<Tabs.Control value="General">General</Tabs.Control>
 				<Tabs.Control value="Files">Files</Tabs.Control>

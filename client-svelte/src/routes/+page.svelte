@@ -193,7 +193,7 @@
 	</thead>
 	<tbody>
 		{#each sorted as torrent (torrent.torrentId)}
-			<tr transition:fade>
+			<tr transition:fade class="transition-color hover:bg-surface-100-900">
 				<td>
 					<input
 						type="checkbox"

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { ProgressRing, Tabs } from '@skeletonlabs/skeleton-svelte';
+	import { Accordion, ProgressRing, Tabs } from '@skeletonlabs/skeleton-svelte';
 	import Info from './Info.svelte';
 	import { formatDownloadClient } from '$lib/util/formatDownloadClient.js';
 	import { formatProvider } from '$lib/util/formatProvider';
@@ -13,16 +13,21 @@
 	import { formatFileSize } from '$lib/util/filesize.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { TorrentsCache, torrentsCache } from '$lib/caches/torrents';
-	import { TorrentsClient, type Torrent } from '$lib/generated/apiClient';
+	import { Download, TorrentsClient, type Torrent } from '$lib/generated/apiClient';
 	import EditTorrentDialog from '$lib/components/EditTorrentDialog.svelte';
 	import DeleteTorrentDialog from '$lib/components/DeleteTorrentDialog.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { Check, ChevronRight, RotateCcw, X } from 'lucide-svelte';
+	import { formatDownloadStatus } from '$lib/util/formatDownloadStatus';
+	import { slide } from 'svelte/transition';
 
 	let { data }: PageProps = $props();
 
 	let selectedTab = $state('General');
+	let expandedDownloadIds = new SvelteSet<string>();
+	let retryingDownloadIds = new SvelteSet<string>();
 
 	let retrying = $state();
 	async function retryTorrent() {
@@ -30,6 +35,17 @@
 		await new TorrentsClient(base).retry(data.torrent?.torrentId as string);
 		retrying = false;
 		await goto('/', { invalidate: [TorrentsCache.invalidationString] });
+	}
+
+	async function retryDownload(downloadId: Download['downloadId']) {
+		if (!downloadId) throw new Error('retryDownload: downloadId was undefined');
+
+		retryingDownloadIds.add(downloadId);
+
+		await new TorrentsClient(base).retryDownload(downloadId);
+
+		retryingDownloadIds.delete(downloadId);
+		await torrentsCache.clearCache();
 	}
 
 	let interval: ReturnType<typeof setInterval> | undefined = undefined;
@@ -48,7 +64,7 @@
 	let deleteDialogElement = $state<HTMLDialogElement>();
 </script>
 
-<div class="card space-y-4">
+<div class="space-y-4">
 	{#if data.torrent === undefined || data.torrent === null}
 		Could not find torrent
 	{:else}
@@ -209,12 +225,170 @@
 						>
 					</div>
 				</Tabs.Panel>
-				<Tabs.Panel value="Files">Files</Tabs.Panel>
-				<Tabs.Panel value="Downloads"
-					>Downloads
-					{#each data.torrent?.downloads ?? [] as download}
-						{download.fileName}
-					{/each}
+				<Tabs.Panel value="Files">
+					{#if !data.torrent}{:else}
+						<div
+							class="grid grid-cols-[minmax(min-content,20%)_1fr_repeat(2,minmax(min-content,20%))] gap-4 p-4"
+						>
+							<span class="font-bold">Id</span>
+							<span class="font-bold">Path</span>
+							<span class="font-bold">Size</span>
+							<span class="font-bold">Selected</span>
+							<hr class="hr col-span-4" />
+							{#each data.torrent.files ?? [] as file}
+								<span class="text-lg">{file.id}</span>
+								<span class="text-lg">{file.path}</span>
+								<span class="text-lg"
+									>{file.bytes !== undefined ? formatFileSize(file.bytes) : 'unknown'}</span
+								>
+								<span class={['text-lg', file.selected ? 'text-success-500' : 'text-error-500']}>
+									{#if file.selected}
+										<Check />
+									{:else}
+										<X />
+									{/if}
+								</span>
+							{/each}
+						</div>
+					{/if}
+				</Tabs.Panel>
+				<Tabs.Panel value="Downloads">
+					<div
+						class="grid grid-cols-[minmax(min-content,4rem)_1fr_repeat(3,minmax(min-content,4rem))] gap-2"
+					>
+						<span class="col-2 font-bold">Link</span>
+						<span class="font-bold">Size</span>
+						<span class="font-bold">Status</span>
+						<span class="flex justify-end font-bold">Retry</span>
+
+						<hr class="hr col-span-5 border-2" />
+						{#each data.torrent?.downloads ?? [] as download}
+							<button
+								class="col-span-4 grid grid-cols-subgrid text-left"
+								onclick={() => {
+									if (download.downloadId === undefined) return;
+
+									if (expandedDownloadIds.has(download.downloadId)) {
+										expandedDownloadIds.delete(download.downloadId);
+									} else {
+										expandedDownloadIds.add(download.downloadId);
+									}
+								}}
+							>
+								<span class="text-lg">
+									<ChevronRight
+										class="transition-transform {download.downloadId !== undefined &&
+										expandedDownloadIds.has(download.downloadId)
+											? 'rotate-90'
+											: ''}"
+									/></span
+								>
+								<span class="text-lg">{download.link}</span>
+								<span class="text-lg">
+									{download.bytesTotal !== undefined
+										? formatFileSize(download.bytesTotal)
+										: 'unknown'}
+								</span>
+								<span class="text-lg">{formatDownloadStatus(download)}</span>
+							</button>
+							<button
+								class="text-primary-500 flex justify-end"
+								onclick={() => retryDownload(download.downloadId)}
+								disabled={download.downloadId !== undefined &&
+									retryingDownloadIds.has(download.downloadId)}
+							>
+								<RotateCcw
+									class={download.downloadId !== undefined &&
+									retryingDownloadIds.has(download.downloadId)
+										? 'animate-spin [animation-direction:reverse]'
+										: ''}
+								/>
+							</button>
+							<hr class="hr col-span-5" />
+
+							{#if download.downloadId !== undefined && expandedDownloadIds.has(download.downloadId)}
+								<div class="empty"></div>
+								<div class="col-span-3 grid grid-cols-1 gap-4 py-2 lg:grid-cols-2" transition:slide>
+									<div>
+										<Info title="Restricted Link">
+											{#snippet content()}
+												<p class="text-lg text-ellipsis">{download.path}</p>
+											{/snippet}
+										</Info>
+										<Info
+											title="Downloaded"
+											value="{formatFileSize(download.bytesDone ?? 0)}/{formatFileSize(
+												download.bytesTotal ?? 0
+											)} ({formatFileSize(download.speed ?? 0)}/s)"
+										/>
+										<Info
+											title="Retry Count"
+											value="{download.retryCount} / {data.torrent?.downloadRetryAttempts ?? 0}"
+										/>
+									</div>
+									<div>
+										<Info
+											title="Added"
+											value={download?.added?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Download Queued"
+											value={download?.downloadQueued?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Download Started"
+											value={download?.downloadStarted?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Download Finished"
+											value={download?.downloadFinished?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Unpacking Queued"
+											value={download?.unpackingQueued?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Unpacking Started"
+											value={download?.unpackingStarted?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Unpacking Finished"
+											value={download?.unpackingFinished?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+										<Info
+											title="Completed"
+											value={download?.completed?.toLocaleString(undefined, {
+												dateStyle: 'long',
+												timeStyle: 'medium'
+											})}
+										/>
+									</div>
+								</div>
+								<hr class="hr col-span-5" />
+							{/if}
+						{/each}
+					</div>
 				</Tabs.Panel>
 			{/snippet}
 		</Tabs>

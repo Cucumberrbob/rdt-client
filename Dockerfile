@@ -1,5 +1,5 @@
 # Stage 1 - Build the frontend
-FROM node:18-alpine3.18 AS node-build-env
+FROM node:22-alpine3.21 AS node-build-env
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM
@@ -8,17 +8,12 @@ ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
 RUN mkdir /appclient
 WORKDIR /appclient
 
-RUN apk add --no-cache git python3 py3-pip make g++
-
-COPY client ./client
-COPY root ./root
+COPY client-svelte ./client
 RUN \
    cd client && \
    echo "**** Building Code  ****" && \
-   npm ci && \
-   npx ng build --output-path=out
-
-RUN ls -FCla /appclient/root
+   npm i && \
+   npm run build
 
 # Stage 2 - Build the backend
 FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 AS dotnet-build-env
@@ -88,8 +83,8 @@ ENV PATH "$PATH:/usr/share/dotnet"
 # Copy files for app
 WORKDIR /app
 COPY --from=dotnet-build-env /appserver/server/out .
-COPY --from=node-build-env /appclient/client/out ./wwwroot
-COPY --from=node-build-env /appclient/root/ /
+COPY --from=node-build-env /appclient/client/build ./wwwroot
+COPY ./root/ /
 
 # ports and volumes
 EXPOSE 6500

@@ -59,23 +59,18 @@ jobs:
           platforms: ${{ matrix.config.platform }}
           push: false
           load: true
+          outputs: ${{ runner.temp }}/${{ matrix.config.arch }}.tar
           tags: ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.config.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.config.arch }}
-
-      # Save the image to a tarball
-      - name: Save image to tarball
-        run: |
-          mkdir -p /tmp/images
-          docker save ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }} | gzip > /tmp/images/${{ matrix.config.arch }}.tar.gz
 
       # Upload the tarball as an artifact
       - name: Upload image tarball
         uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.config.arch }}
-          path: /tmp/images/${{ matrix.config.arch }}.tar.gz
+          path: ${{ runner.temp }}/${{ matrix.config.arch }}.tar
           retention-days: 1
 
   # Push to registries
@@ -87,7 +82,7 @@ jobs:
       - name: Download all image tarballs
         uses: actions/download-artifact@v4
         with:
-          path: /tmp/images
+          path: ${{ runner.temp }}
           pattern: image-*
           merge-multiple: true
 
@@ -125,41 +120,31 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      # Load images back from tarballs
       - name: Load images
         run: |
-          docker load < /tmp/images/amd64.tar.gz
-          docker load < /tmp/images/arm64.tar.gz
-      
-      - run: docker image ls
-      
-      # Create and push manifests for each tag
+          docker load --input ${{ runner.temp }}/amd64.tar
+          docker load --input ${{ runner.temp }}/arm64.tar
+
       - name: Create and push manifests
         run: |
           # Process each tag
           echo "${{ steps.meta.outputs.tags }}" | while read -r TAG; do
             # Skip empty lines
             [ -z "$TAG" ] && continue
-          
+
             echo "Processing tag: $TAG"
-          
-            # Tag the architecture-specific images with the target tag
+
             docker tag ${{ env.APP_NAME }}:${{ github.sha }}-amd64 $TAG-amd64
             docker tag ${{ env.APP_NAME }}:${{ github.sha }}-arm64 $TAG-arm64
-          
+
             docker push $TAG-arm64
             docker push $TAG-amd64
-          
-            # Create the manifest
+
             docker manifest create $TAG \
               $TAG-amd64 \
               $TAG-arm64
-          
-            # Push the manifest
+
             docker manifest push $TAG
-          
-            # Clean up the temporary tags
-            docker rmi $TAG-amd64 $TAG-arm64 || true
           done
 
   # Update Docker Hub description

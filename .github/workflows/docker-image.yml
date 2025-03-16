@@ -59,7 +59,7 @@ jobs:
           platforms: ${{ matrix.config.platform }}
           push: false
           load: true
-          outputs: ${{ runner.temp }}/${{ matrix.config.arch }}.tar
+          outputs: /tmp/images/${{ matrix.config.arch }}.tar
           tags: ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.config.arch }}
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.config.arch }}
-          path: ${{ runner.temp }}/${{ matrix.config.arch }}.tar
+          path: /tmp/images/${{ matrix.config.arch }}.tar
           retention-days: 1
 
   # Push to registries
@@ -82,7 +82,7 @@ jobs:
       - name: Download all image tarballs
         uses: actions/download-artifact@v4
         with:
-          path: ${{ runner.temp }}
+          path: /tmp/images
           pattern: image-*
           merge-multiple: true
 
@@ -122,8 +122,8 @@ jobs:
       
       - name: Load images
         run: |
-          docker load --input ${{ runner.temp }}/amd64.tar
-          docker load --input ${{ runner.temp }}/arm64.tar
+          docker load --input /tmp/images/amd64.tar
+          docker load --input /tmp/images/arm64.tar
 
       - name: Create and push manifests
         run: |

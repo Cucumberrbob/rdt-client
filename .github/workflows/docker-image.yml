@@ -61,7 +61,7 @@ jobs:
           load: true
           tags: ${{ env.APP_NAME }}:${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
+          cache-from: type=gha,scope=${{ matrix.config.arch }}
           cache-to: type=gha,mode=max
 
       # Save the image to a tarball
@@ -144,10 +144,6 @@ jobs:
             # Tag the architecture-specific images with the target tag
             docker tag ${{ env.APP_NAME }}:amd64 $TAG-amd64
             docker tag ${{ env.APP_NAME }}:arm64 $TAG-arm64
-          
-            # Push the architecture-specific images
-            docker push $TAG-amd64
-            docker push $TAG-arm64
           
             # Create the manifest
             docker manifest create $TAG \

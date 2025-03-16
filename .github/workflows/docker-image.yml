@@ -49,34 +49,18 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
-      
-      # Build and save the image locally
-      - name: Build and save image
+
+      - name: Build and cache image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ env.DOCKER_FILE }}
           platforms: ${{ matrix.config.platform }}
           push: false
-          load: true
           tags: ${{ env.APP_NAME }}:${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # Save the image to a tarball
-      - name: Save image to tarball
-        run: |
-          mkdir -p /tmp/images
-          docker save ${{ env.APP_NAME }}:${{ matrix.config.arch }} | gzip > /tmp/images/${{ matrix.config.arch }}.tar.gz
-
-      # Upload the tarball as an artifact
-      - name: Upload image tarball
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-${{ matrix.config.arch }}
-          path: /tmp/images/${{ matrix.config.arch }}.tar.gz
-          retention-days: 1
 
   # Push to registries
   push-images:
@@ -84,13 +68,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' }}
     steps:
-      - name: Download all image tarballs
-        uses: actions/download-artifact@v4
-        with:
-          path: /tmp/images
-          pattern: image-*
-          merge-multiple: true
-
       - name: Docker Metadata action
         id: meta
         uses: docker/metadata-action@v5
@@ -124,42 +101,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      # Load images back from tarballs
-      - name: Load images
-        run: |
-          docker load < /tmp/images/amd64.tar.gz
-          docker load < /tmp/images/arm64.tar.gz
-      
-      # Create and push manifests for each tag
-      - name: Create and push manifests
-        run: |
-          # Process each tag
-          echo "${{ steps.meta.outputs.tags }}" | while read -r TAG; do
-            # Skip empty lines
-            [ -z "$TAG" ] && continue
-          
-            echo "Processing tag: $TAG"
-          
-            # Tag the architecture-specific images with the target tag
-            docker tag ${{ env.APP_NAME }}:amd64 $TAG-amd64
-            docker tag ${{ env.APP_NAME }}:arm64 $TAG-arm64
-          
-            # Push the architecture-specific images
-            docker push $TAG-amd64
-            docker push $TAG-arm64
-          
-            # Create the manifest
-            docker manifest create $TAG \
-              $TAG-amd64 \
-              $TAG-arm64
-          
-            # Push the manifest
-            docker manifest push $TAG
-          
-            # Clean up the temporary tags
-            docker rmi $TAG-amd64 $TAG-arm64 || true
-          done
+
+      - name: Load cached images and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ env.DOCKER_FILE }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
 
   # Update Docker Hub description
   update-description:

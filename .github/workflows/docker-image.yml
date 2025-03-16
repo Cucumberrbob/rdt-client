@@ -59,7 +59,7 @@ jobs:
           platforms: ${{ matrix.config.platform }}
           push: false
           load: true
-          outputs: /tmp/images/${{ matrix.config.arch }}.tar
+          outputs:  type=docker,dest=/tmp/images/${{ matrix.config.arch }}.tar
           tags: ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.config.arch }}

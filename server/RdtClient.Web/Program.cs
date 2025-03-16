@@ -59,7 +59,7 @@ Serilog.Debugging.SelfLog.Enable(msg =>
     Debug.WriteLine(msg);
 });
 
-Log.Information("Starting RealDebridClient host");
+Log.Information("Starting RealDebridClient Host");
 
 builder.Services.AddControllers();
 

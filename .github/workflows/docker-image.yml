@@ -147,6 +147,9 @@ jobs:
             docker tag ${{ env.APP_NAME }}:${{ github.sha }}-amd64 $TAG-amd64
             docker tag ${{ env.APP_NAME }}:${{ github.sha }}-arm64 $TAG-arm64
           
+            docker push $TAG-arm64
+            docker push $TAG-amd64
+          
             # Create the manifest
             docker manifest create $TAG \
               $TAG-amd64 \

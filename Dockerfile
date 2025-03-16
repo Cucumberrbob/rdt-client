@@ -24,7 +24,7 @@ RUN \
    npm run build -- --output-path=out
 
 # Stage 3 - Install Backend Dependencies
-FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim-amd64 AS dotnet-deps
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-deps
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM

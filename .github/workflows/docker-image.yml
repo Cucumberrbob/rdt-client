@@ -68,7 +68,7 @@ jobs:
       - name: Save image to tarball
         run: |
           mkdir -p /tmp/images
-          docker save ${{ env.APP_NAME }}:${{ matrix.config.arch }} | gzip > /tmp/images/${{ matrix.config.arch }}.tar.gz
+          docker save ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }} | gzip > /tmp/images/${{ matrix.config.arch }}.tar.gz
 
       # Upload the tarball as an artifact
       - name: Upload image tarball

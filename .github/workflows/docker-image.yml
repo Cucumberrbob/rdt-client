@@ -59,7 +59,7 @@ jobs:
           platforms: ${{ matrix.config.platform }}
           push: false
           load: true
-          outputs:  type=docker,dest=/tmp/images/${{ matrix.config.arch }}.tar
+          outputs:  type=docker,dest=${{ runner.temp }}/${{ matrix.config.arch }}.tar
           tags: ${{ env.APP_NAME }}:${{ github.sha }}-${{ matrix.config.arch }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.config.arch }}
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.config.arch }}
-          path: /tmp/images/${{ matrix.config.arch }}.tar
+          path: ${{ runner.temp }}/${{ matrix.config.arch }}.tar
           retention-days: 1
 
   # Push to registries

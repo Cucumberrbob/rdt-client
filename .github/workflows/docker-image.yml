@@ -131,6 +131,8 @@ jobs:
           docker load < /tmp/images/amd64.tar.gz
           docker load < /tmp/images/arm64.tar.gz
       
+      - run: docker image ls
+      
       # Create and push manifests for each tag
       - name: Create and push manifests
         run: |

@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Angular build.
 
 ## [2.0.99] - 2025-03-07
-### Security fix
+### Security
 - The Api/Authentication/Update was not protected by authentication, meaning everyone could reset your password and gain access.
 
 ### Added

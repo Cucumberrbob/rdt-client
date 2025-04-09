@@ -1,0 +1,15 @@
+name: 'Get Version Notes'
+description: 'Extracts the release notes for a specific version from the changelog'
+
+inputs:
+  version:
+    description: 'The version to get notes for (e.g. v2.0.1)'
+    required: true
+
+outputs:
+  notes:
+    description: 'The release notes for the specified version'
+
+runs:
+  using: "node20"
+  main: "index.js" 

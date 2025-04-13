@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.105]
+### Other
+- Changed automated releasing strategy (this only affects rdt-client developers)
+
 ## [v2.0.104]
 ### Fixed
 - Update the version number

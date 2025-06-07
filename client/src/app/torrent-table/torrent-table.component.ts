@@ -10,18 +10,10 @@ import { SortPipe } from '../sort.pipe';
 import { FileSizePipe } from '../filesize.pipe';
 
 @Component({
-    selector: 'app-torrent-table',
-    templateUrl: './torrent-table.component.html',
-    styleUrls: ['./torrent-table.component.scss'],
-    imports: [
-    FormsModule,
-    NgClass,
-    DecimalPipe,
-    DatePipe,
-    TorrentStatusPipe,
-    SortPipe,
-    FileSizePipe
-],
+  selector: 'app-torrent-table',
+  templateUrl: './torrent-table.component.html',
+  styleUrls: ['./torrent-table.component.scss'],
+  imports: [FormsModule, NgClass, DecimalPipe, DatePipe, TorrentStatusPipe, SortPipe, FileSizePipe],
 })
 export class TorrentTableComponent implements OnInit {
   public torrents: Torrent[] = [];
@@ -61,18 +53,18 @@ export class TorrentTableComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.torrentService.getList().subscribe(
-      (result) => {
+    this.torrentService.getList().subscribe({
+      next: (result) => {
         this.torrents = result;
 
         this.torrentService.update$.subscribe((result2) => {
           this.torrents = result2;
         });
       },
-      (err) => {
+      error: (err) => {
         this.error = err.error;
       },
-    );
+    });
   }
 
   public sort(property: string): void {

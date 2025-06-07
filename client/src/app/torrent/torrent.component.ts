@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, ɵEmptyOutletComponent } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { saveAs } from 'file-saver-es';
 import { Torrent } from '../models/torrent.model';
 import { TorrentService } from '../torrent.service';
-import { NgClass, NgIf, NgSwitch, NgSwitchCase, NgFor, DatePipe } from '@angular/common';
+import { NgClass, DatePipe } from '@angular/common';
 import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import { FormsModule } from '@angular/forms';
 import { TorrentStatusPipe } from '../torrent-status.pipe';
@@ -16,20 +16,15 @@ import { FileSizePipe } from '../filesize.pipe';
     templateUrl: './torrent.component.html',
     styleUrls: ['./torrent.component.scss'],
     imports: [
-        NgClass,
-        NgIf,
-        NgSwitch,
-        NgSwitchCase,
-        ɵEmptyOutletComponent,
-        CdkCopyToClipboard,
-        NgFor,
-        FormsModule,
-        DatePipe,
-        TorrentStatusPipe,
-        DownloadStatusPipe,
-        DecodeURIPipe,
-        FileSizePipe,
-    ],
+    NgClass,
+    CdkCopyToClipboard,
+    FormsModule,
+    DatePipe,
+    TorrentStatusPipe,
+    DownloadStatusPipe,
+    DecodeURIPipe,
+    FileSizePipe
+],
 })
 export class TorrentComponent implements OnInit {
   public torrent: Torrent;

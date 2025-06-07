@@ -2,17 +2,16 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { FormsModule } from '@angular/forms';
-import { NgClass, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
     imports: [
-        FormsModule,
-        NgClass,
-        NgIf,
-    ],
+    FormsModule,
+    NgClass
+],
 })
 export class LoginComponent {
   public userName: string;

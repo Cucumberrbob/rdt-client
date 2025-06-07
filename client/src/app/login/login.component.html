@@ -16,7 +16,7 @@
                     name="userName"
                     (change)="setUserName($event)"
                     required
-                  />
+                    />
                   <span class="icon is-small is-left">
                     <i class="fa fa-envelope"></i>
                   </span>
@@ -37,13 +37,15 @@
                   type="submit"
                   [ngClass]="{ 'is-loading': loggingIn }"
                   [disabled]="loggingIn"
-                >
+                  >
                   Login
                 </button>
               </div>
-              <div class="notification is-danger is-light" *ngIf="error?.length > 0">
-                {{ error }}
-              </div>
+              @if (error?.length > 0) {
+                <div class="notification is-danger is-light">
+                  {{ error }}
+                </div>
+              }
             </form>
           </div>
         </div>

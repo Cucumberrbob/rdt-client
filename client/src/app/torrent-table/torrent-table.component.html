@@ -13,7 +13,7 @@
             type="checkbox"
             (click)="toggleDeleteSelectAll($event)"
             [checked]="selectedTorrents.length > 0 && selectedTorrents.length === torrents.length"
-            />
+          />
         </th>
         <th (click)="sort('rdName')">Name</th>
         <th (click)="sort('category')">Category</th>
@@ -34,7 +34,7 @@
               type="checkbox"
               (click)="toggleSelect(torrent.torrentId)"
               [checked]="selectedTorrents.includes(torrent.torrentId)"
-              />
+            />
           </td>
           <td (click)="openTorrent(torrent.torrentId)" class="break-all">
             {{ torrent.rdName }}
@@ -70,25 +70,13 @@
 
   <div class="flex-container">
     @if (torrents.length > 0) {
-      <button
-        class="button is-danger"
-        (click)="showDeleteModal()"
-        [disabled]="selectedTorrents.length === 0"
-        >
+      <button class="button is-danger" (click)="showDeleteModal()" [disabled]="selectedTorrents.length === 0">
         Delete Selected
       </button>
-      <button
-        class="button is-primary"
-        (click)="showRetryModal()"
-        [disabled]="selectedTorrents.length === 0"
-        >
+      <button class="button is-primary" (click)="showRetryModal()" [disabled]="selectedTorrents.length === 0">
         Retry Selected
       </button>
-      <button
-        class="button is-primary"
-        (click)="changeSettingsModal()"
-        [disabled]="selectedTorrents.length === 0"
-        >
+      <button class="button is-primary" (click)="changeSettingsModal()" [disabled]="selectedTorrents.length === 0">
         Change Settings
       </button>
     }
@@ -133,9 +121,7 @@
         Deleting a torrent from Real-Debrid will automatically delete it here too.
       </div>
       @if (deleteError?.length > 0) {
-        <div class="notification is-danger is-light">
-          Error deleting torrent: {{ deleteError }}
-        </div>
+        <div class="notification is-danger is-light">Error deleting torrent: {{ deleteError }}</div>
       }
     </section>
     <footer class="modal-card-foot">
@@ -144,7 +130,7 @@
         (click)="deleteOk()"
         [disabled]="deleting"
         [ngClass]="{ 'is-loading': deleting }"
-        >
+      >
         Delete selected
       </button>
       <button class="button" (click)="deleteCancel()" [disabled]="deleting" [ngClass]="{ 'is-loading': deleting }">
@@ -168,9 +154,7 @@
         or torrent file to the debrid provider.
       </p>
       @if (retryError?.length > 0) {
-        <div class="notification is-danger is-light">
-          Error retrying torrent: {{ retryError }}
-        </div>
+        <div class="notification is-danger is-light">Error retrying torrent: {{ retryError }}</div>
       }
     </section>
     <footer class="modal-card-foot">
@@ -179,7 +163,7 @@
         (click)="retryOk()"
         [disabled]="retrying"
         [ngClass]="{ 'is-loading': retrying }"
-        >
+      >
         Retry selected
       </button>
       <button class="button" (click)="retryCancel()" [disabled]="retrying" [ngClass]="{ 'is-loading': retrying }">
@@ -252,7 +236,7 @@
             min="0"
             step="1"
             [(ngModel)]="updateSettingsDownloadRetryAttempts"
-            />
+          />
         </div>
         <p class="help">When a single download fails it will retry it this many times before marking it as failed.</p>
       </div>
@@ -266,7 +250,7 @@
             min="0"
             step="1"
             [(ngModel)]="updateSettingsTorrentRetryAttempts"
-            />
+          />
         </div>
         <p class="help">
           When a single download has failed multiple times (see setting above) or when the torrent itself received an
@@ -293,7 +277,7 @@
             min="0"
             step="1"
             [(ngModel)]="updateSettingsTorrentLifetime"
-            />
+          />
         </div>
         <p class="help">
           The maximum lifetime of a torrent in minutes. When this time has passed, mark the torrent as error. If the
@@ -302,9 +286,7 @@
       </div>
 
       @if (changeSettingsError?.length > 0) {
-        <div class="notification is-danger is-light">
-          Error changing settings: {{ changeSettingsError }}
-        </div>
+        <div class="notification is-danger is-light">Error changing settings: {{ changeSettingsError }}</div>
       }
     </section>
     <footer class="modal-card-foot">
@@ -313,7 +295,7 @@
         (click)="changeSettingsOk()"
         [disabled]="changingSettings"
         [ngClass]="{ 'is-loading': changingSettings }"
-        >
+      >
         Save
       </button>
       <button
@@ -321,7 +303,7 @@
         (click)="changeSettingsCancel()"
         [disabled]="changingSettings"
         [ngClass]="{ 'is-loading': changingSettings }"
-        >
+      >
         Cancel
       </button>
     </footer>

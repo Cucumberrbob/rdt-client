@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Download } from './models/download.model';
 import { FileSizePipe } from './filesize.pipe';
 
-@Pipe({ name: 'downloadStatus', })
+@Pipe({ name: 'downloadStatus' })
 export class DownloadStatusPipe implements PipeTransform {
   constructor(private pipe: FileSizePipe) {}
 

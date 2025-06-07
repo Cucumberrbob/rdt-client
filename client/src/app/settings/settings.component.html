@@ -15,33 +15,31 @@
   <div [hidden]="activeTab !== i">
     <h3>{{ tab.description }}</h3>
     @for (setting of tab.settings; track setting) {
-      @if (setting.type === 'Object') {
+      @if (setting.type === "Object") {
         <h3 class="title is-3" style="margin-top: 1.2rem">{{ setting.displayName }}</h3>
       }
       <div class="field">
-        @if (setting.type !== 'Boolean' && setting.type !== 'Object') {
-          <label class="label">{{
-            setting.displayName
-          }}</label>
+        @if (setting.type !== "Boolean" && setting.type !== "Object") {
+          <label class="label">{{ setting.displayName }}</label>
         }
         @switch (setting.type) {
-          @case ('String') {
+          @case ("String") {
             <div class="control">
               <input class="input" type="text" [(ngModel)]="setting.value" />
             </div>
           }
-          @case ('Int32') {
+          @case ("Int32") {
             <div class="control">
               <input class="input" type="number" [(ngModel)]="setting.value" />
             </div>
           }
-          @case ('Boolean') {
+          @case ("Boolean") {
             <label class="checkbox">
               <input type="checkbox" [(ngModel)]="setting.value" />
               {{ setting.displayName }}
             </label>
           }
-          @case ('Enum') {
+          @case ("Enum") {
             <div class="control select is-fullwidth">
               <select [(ngModel)]="setting.value">
                 @for (kvp of setting.enumValues | keyvalue; track kvp) {
@@ -50,7 +48,7 @@
               </select>
             </div>
           }
-          @case ('Object') {
+          @case ("Object") {
             <ng-container></ng-container>
           }
           @default {
@@ -58,13 +56,13 @@
           }
         }
         <p class="help" [innerHtml]="setting.description | nl2br"></p>
-        @if (setting.key === 'DownloadClient:Aria2cSecret') {
+        @if (setting.key === "DownloadClient:Aria2cSecret") {
           <button
             class="button is-warning"
             (click)="testAria2cConnection()"
             [disabled]="saving"
             [ngClass]="{ 'is-loading': saving }"
-            >
+          >
             Test aria2 connection
           </button>
           @if (testAria2cConnectionError) {
@@ -95,16 +93,15 @@
             (click)="testDownloadPath()"
             [disabled]="saving"
             [ngClass]="{ 'is-loading': saving }"
-            >
+          >
             Test permissions
           </button>
-        }  @else if (testPathError) {
+        } @else if (testPathError) {
           <div class="notification is-danger is-light">
             Could not test your download path<br />
             {{ testPathError }}
           </div>
-        }
-        @else if (testPathSuccess) {
+        } @else if (testPathSuccess) {
           <div class="notification is-success is-light">Your download path looks good!</div>
         }
       </div>
@@ -119,7 +116,7 @@
             (click)="testDownloadSpeed()"
             [disabled]="saving"
             [ngClass]="{ 'is-loading': saving }"
-            >
+          >
             Test download speed
           </button>
         } @else if (testDownloadSpeedError) {
@@ -128,9 +125,7 @@
             {{ testDownloadSpeedError }}
           </div>
         } @else if (testDownloadSpeedSuccess) {
-          <div class="notification is-success is-light">
-            Download speed {{ testDownloadSpeedSuccess | filesize }}/s
-          </div>
+          <div class="notification is-success is-light">Download speed {{ testDownloadSpeedSuccess | filesize }}/s</div>
         }
       </div>
       <div class="help">
@@ -146,7 +141,7 @@
             (click)="testWriteSpeed()"
             [disabled]="saving"
             [ngClass]="{ 'is-loading': saving }"
-            >
+          >
             Test write speed
           </button>
         } @else if (testWriteSpeedError) {
@@ -155,9 +150,7 @@
             {{ testWriteSpeedError }}
           </div>
         } @else if (testWriteSpeedSuccess) {
-          <div class="notification is-success is-light">
-            Write speed {{ testWriteSpeedSuccess | filesize }}/s
-          </div>
+          <div class="notification is-success is-light">Write speed {{ testWriteSpeedSuccess | filesize }}/s</div>
         }
       </div>
       <div class="help">This will write a small file to your download folder to see how fast it can write to it.</div>
@@ -182,7 +175,7 @@
         type="button"
         (click)="registerMagnetHandler()"
         [disabled]="!canRegisterMagnetHandler"
-        >
+      >
         <span>
           {{ canRegisterMagnetHandler ? "Register Handler" : "Unavailable in This Browser" }}
         </span>
@@ -190,11 +183,15 @@
     </div>
     <p class="help">
       @if (canRegisterMagnetHandler) {
-        This will attempt to register the client as your browser's default handler for magnet links and automatically open
-        them in the new torrent screen for downloading.
+        This will attempt to register the client as your browser's default handler for magnet links and automatically
+        open them in the new torrent screen for downloading.
       } @else {
         Magnet link registration is unavailable. Your
-        <a href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           browser may not support this feature
         </a>
         , or the client is not being served in a
@@ -202,7 +199,7 @@
           href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/"
           target="_blank"
           rel="noopener noreferrer"
-          >
+        >
           secure context
         </a>
         .

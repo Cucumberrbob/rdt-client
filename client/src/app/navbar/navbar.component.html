@@ -11,7 +11,7 @@
       aria-expanded="false"
       [class.is-active]="showMobileMenu"
       (click)="showMobileMenu = !showMobileMenu"
-      >
+    >
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
@@ -71,11 +71,8 @@
   (!profile.disableUpdateNotification || profile.isInsecure) &&
   profile.latestVersion &&
   profile.currentVersion !== profile.latestVersion
-  ) {
-  <div
-    class="notification"
-    [ngClass]="profile.isInsecure ? 'is-danger' : 'is-warning'"
-    >
+) {
+  <div class="notification" [ngClass]="profile.isInsecure ? 'is-danger' : 'is-warning'">
     @if (profile.isInsecure) {
       <span> Your current version is insecure. </span>
     }

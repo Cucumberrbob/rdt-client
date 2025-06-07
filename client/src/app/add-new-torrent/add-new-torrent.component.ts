@@ -8,14 +8,10 @@ import { FormsModule } from '@angular/forms';
 import { NgClass, NgIf } from '@angular/common';
 
 @Component({
-    selector: 'app-add-new-torrent',
-    templateUrl: './add-new-torrent.component.html',
-    styleUrls: ['./add-new-torrent.component.scss'],
-    imports: [
-        FormsModule,
-        NgClass,
-        NgIf,
-    ],
+  selector: 'app-add-new-torrent',
+  templateUrl: './add-new-torrent.component.html',
+  styleUrls: ['./add-new-torrent.component.scss'],
+  imports: [FormsModule, NgClass, NgIf],
 })
 export class AddNewTorrentComponent implements OnInit {
   public fileName: string;
@@ -55,11 +51,11 @@ export class AddNewTorrentComponent implements OnInit {
     private router: Router,
     private torrentService: TorrentService,
     private settingsService: SettingsService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.activatedRoute.queryParams.subscribe(params => {
+    this.activatedRoute.queryParams.subscribe((params) => {
       if (params['magnet']) {
         this.magnetLink = decodeURIComponent(params['magnet']);
       }
@@ -112,25 +108,6 @@ export class AddNewTorrentComponent implements OnInit {
     this.selectedFile = file;
 
     this.checkFiles();
-  }
-
-  public downloadFileChecked(file: string): void {
-    this.downloadFiles[file] = !this.downloadFiles[file];
-
-    this.allSelected = true;
-    this.availableFiles.forEach((file) => {
-      if (!this.downloadFiles[file.filename]) {
-        this.allSelected = false;
-      }
-    });
-  }
-
-  public downloadFileCheckedAll(): void {
-    this.allSelected = !this.allSelected;
-
-    this.availableFiles.forEach((file) => {
-      this.downloadFiles[file.filename] = this.allSelected;
-    });
   }
 
   public ok(): void {
@@ -246,18 +223,6 @@ export class AddNewTorrentComponent implements OnInit {
     } else {
       this.saving = false;
     }
-  }
-
-  public isRegexExcluded(file: TorrentFileAvailability): boolean {
-    if (this.regexSelected == null) {
-      return false;
-    }
-
-    if (this.regexSelected.find((m) => m.filename === file.filename) == null) {
-      return true;
-    }
-
-    return false;
   }
 
   public verifyRegex(): void {

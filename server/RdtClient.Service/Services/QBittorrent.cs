@@ -208,11 +208,14 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
             var torrentPath = downloadPath;
             if (!String.IsNullOrWhiteSpace(torrent.RdName))
             {
-                if (Settings.Get.DownloadClient.CreateSubfolderForSingleFile && torrent.Files.Count == 1)
+                if (!Settings.Get.DownloadClient.CreateSubfolderForSingleFile && torrent.Files.Count == 1)
                 {
-                    torrentPath = Path.Combine(downloadPath, torrent.Files[0].Path);
+                    var newTorrentPath = Path.Combine(downloadPath, torrent.Files[0].Path);
+                    logger.LogInformation("I'm in the correct branch, setting torrentPath from {torrentPath} to {newTorrentPath}", torrentPath, newTorrentPath);
+                    torrentPath = newTorrentPath;
                 } else
                 {
+                    logger.LogCritical("wrong branch");
                     torrentPath = Path.Combine(downloadPath, torrent.RdName) + Path.DirectorySeparatorChar;
                 }
             }

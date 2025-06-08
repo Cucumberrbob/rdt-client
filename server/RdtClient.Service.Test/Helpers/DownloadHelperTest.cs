@@ -38,7 +38,7 @@ public class DownloadHelperTest
         };
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, new MockFileSystem());
 
         // Assert
         Assert.Null(path);
@@ -82,7 +82,7 @@ public class DownloadHelperTest
         };
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, new MockFileSystem());
 
         // Assert
         Assert.Null(path);

@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 using RdtClient.Data.Models.Data;
+using RdtClient.Data.Models.Internal;
 using RdtClient.Data.Models.TorrentClient;
 using RdtClient.Service.Helpers;
 
@@ -8,6 +9,19 @@ namespace RdtClient.Service.Test.Helpers;
 
 public class DownloadHelperTest
 {
+    private DbSettings MakeSettings(Boolean createSubfolderForSingleFile)
+    {
+        var settings = new DbSettings
+        {
+            DownloadClient =
+            {
+                CreateSubfolderForSingleFile = createSubfolderForSingleFile
+            }
+        };
+
+        return settings;
+    }
+
     [Fact]
     public void GetDownloadPath_WithPath_WhenRdNameNull_ReturnsNull()
     {
@@ -114,7 +128,7 @@ public class DownloadHelperTest
         var fileSystem = new MockFileSystem();
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(true));
 
         // Assert
         var expectedPath = Path.Combine("/data/downloads", torrent.RdName, "filename-from-link.txt");
@@ -137,7 +151,7 @@ public class DownloadHelperTest
         };
 
         // Act
-        var path = DownloadHelper.GetDownloadPath(torrent, download);
+        var path = DownloadHelper.GetDownloadPath(torrent, download, MakeSettings(true));
 
         // Assert
         var expectedPath = Path.Combine(torrent.RdName, "filename-from-link.txt");
@@ -162,7 +176,7 @@ public class DownloadHelperTest
         var fileSystem = new MockFileSystem();
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(true));
 
         // Assert
         var expectedDirectoryPath = Path.Combine("/data/downloads", torrent.RdName);
@@ -200,7 +214,7 @@ public class DownloadHelperTest
         var fileSystem = new MockFileSystem();
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(true));
 
         // Assert
         var expectedPath = Path.Combine("/data/downloads", torrent.RdName, fileRelativePath);
@@ -234,7 +248,7 @@ public class DownloadHelperTest
         };
 
         // Act
-        var path = DownloadHelper.GetDownloadPath(torrent, download);
+        var path = DownloadHelper.GetDownloadPath(torrent, download, MakeSettings(true));
 
         // Assert
         var expectedPath = Path.Combine(torrent.RdName, fileRelativePath);
@@ -260,10 +274,78 @@ public class DownloadHelperTest
         var fileSystem = new MockFileSystem();
 
         // Act
-        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(true));
 
         // Assert
         var expectedPath = Path.Combine("/data/downloads", torrent.RdName);
+        Assert.Equal(expectedPath, path);
+    }
+
+    [Fact]
+    public void GetDownloadPath_WithPath_SingleFileTorrent_CreateSubfolderFalse_PlacesInRoot()
+    {
+        // Arrange
+        var download = new Download
+        {
+            Link = "https://fake.url/file.txt",
+            FileName = "file.txt"
+        };
+
+        IList<TorrentClientFile> files =
+        [
+            new()
+            {
+                Path = "file.txt"
+            }
+        ];
+
+        var torrent = new Torrent
+        {
+            RdName = "Torrent Name",
+            RdFiles = JsonSerializer.Serialize(files)
+        };
+
+        var fileSystem = new MockFileSystem();
+
+        // Act
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(false));
+
+        // Assert
+        var expectedPath = Path.Combine("/data/downloads", "file.txt");
+        Assert.Equal(expectedPath, path);
+    }
+
+    [Fact]
+    public void GetDownloadPath_WithPath_SingleFileTorrent_CreateSubfolderTrue_PlacesInSubfolder()
+    {
+        // Arrange
+        var download = new Download
+        {
+            Link = "https://fake.url/file.txt",
+            FileName = "file.txt"
+        };
+
+        IList<TorrentClientFile> files =
+        [
+            new()
+            {
+                Path = "file.txt"
+            }
+        ];
+
+        var torrent = new Torrent
+        {
+            RdName = "Torrent Name",
+            RdFiles = JsonSerializer.Serialize(files)
+        };
+
+        var fileSystem = new MockFileSystem();
+
+        // Act
+        var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem, MakeSettings(true));
+
+        // Assert
+        var expectedPath = Path.Combine("/data/downloads", torrent.RdName, "file.txt");
         Assert.Equal(expectedPath, path);
     }
 }

@@ -1,12 +1,14 @@
 ﻿using System.IO.Abstractions;
 using RdtClient.Data.Models.Data;
+using RdtClient.Data.Models.Internal;
 using System.Web;
+using RdtClient.Service.Services;
 
 namespace RdtClient.Service.Helpers;
 
 public static class DownloadHelper
 {
-    public static String? GetDownloadPath(String downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null)
+    public static String? GetDownloadPath(String downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null, DbSettings? settings = null)
     {
         var fileUrl = download.Link;
 
@@ -15,9 +17,12 @@ public static class DownloadHelper
             return null;
         }
 
+        var effectiveSettings = settings ?? Settings.Get;
+        var createSubfolder = effectiveSettings.DownloadClient.CreateSubfolderForSingleFile;
+        var isSingleFile = torrent.Files.Count == 1;
+
         var directory = RemoveInvalidPathChars(torrent.RdName);
-        
-        var torrentPath = Path.Combine(downloadPath, directory);
+        var torrentPath = !createSubfolder && isSingleFile ? downloadPath : Path.Combine(downloadPath, directory);
 
         var fileName = GetFileName(download);
 
@@ -36,8 +41,7 @@ public static class DownloadHelper
 
             if (!String.IsNullOrWhiteSpace(subPath))
             {
-                subPath = subPath.Trim('/').Trim('\\');
-
+                subPath = subPath.Trim('/', '\\');
                 torrentPath = Path.Combine(torrentPath, subPath);
             }
         }
@@ -54,7 +58,7 @@ public static class DownloadHelper
         return filePath;
     }
 
-    public static String? GetDownloadPath(Torrent torrent, Download download)
+    public static String? GetDownloadPath(Torrent torrent, Download download, DbSettings? settings = null)
     {
         var fileUrl = download.Link;
 
@@ -64,7 +68,12 @@ public static class DownloadHelper
         }
 
         var uri = new Uri(fileUrl);
-        var torrentPath = RemoveInvalidPathChars(torrent.RdName);
+        
+        var effectiveSettings = settings ?? Settings.Get;
+        var createSubfolder = effectiveSettings.DownloadClient.CreateSubfolderForSingleFile;
+        var isSingleFile = torrent.Files.Count == 1;
+        
+        var torrentPath = !createSubfolder && isSingleFile ? "" : RemoveInvalidPathChars(torrent.RdName);
 
         var fileName = download.FileName;
 

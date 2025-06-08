@@ -162,6 +162,10 @@ http://127.0.0.1:6800/jsonrpc.")]
     [DisplayName("Log level")]
     [Description("Only set when trying to debug a download client, can generate a lot of logs.")]
     public DownloadClientLogLevel LogLevel { get; set; } = DownloadClientLogLevel.None;
+    
+    [DisplayName("Create subfolder for single file torrents")]
+    [Description("If enabled, a subfolder will be created for single-file torrents. If disabled, single files will be placed directly in the download/category folder.")]
+    public Boolean CreateSubfolderForSingleFile { get; set; } = true;
 }
 
 public class DbSettingsProvider
